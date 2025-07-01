@@ -25,3 +25,18 @@ for(let i=0;i<3;i++){
 
 })();
 
+//create Player factory function
+const Player=function(playerName,option)
+{
+    let name=playerName;
+    let tacOption=option;
+    const getTacOption=function(){
+        return tacOption;
+    }
+    return {getTacOption}
+}
+const player1=Player("danish","X");
+const player2=Player("arora","O");
+console.log(player1,player2);
+
+
