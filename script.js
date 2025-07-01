@@ -1,5 +1,17 @@
 console.log("Let's do this danish!!");//time start :6::00pm
-
+const Game=(function(){
+let state=false;
+const start=function(){
+    state=true;
+}
+const stop=function(){
+    state=false;
+}
+const getState=function(){
+    return state;
+}
+    return {getState,start,stop}
+})();
 const cell=function(){
     let value;
     function setValue(playerValue){
@@ -37,6 +49,8 @@ const Player=function(playerName,option)
 }
 const player1=Player("danish","X");
 const player2=Player("arora","O");
+Game.start();
+console.log(Game.getState());
 console.log(player1,player2);
 
 
