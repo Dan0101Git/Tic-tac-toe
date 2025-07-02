@@ -4,17 +4,107 @@
     box-sizing: border-box;
 }
 :root{
-    ---body-bg-color:rgba(216, 216, 216, 0.794);
+    ---body-bg-color:#FDF8EE;
+    --header-bg-color:#eae6dd;
+/* rgba(216, 216, 216, 0.794); */
+    --font-color:#575757;
+    --text-font:"Gloria Hallelujah", cursive;
+    /* "Patrick Hand", cursive; */
+    --base-font-size:clamp(20px,calc(2vw + .3rem),40px);
+    --modal-br:20px;
 }
 html,body{
     background-color: var(---body-bg-color);
+    color:var(--font-color);
+    font-size: var(--base-font-size);
 
+}
+main,footer,header,button,div,input{
+    font-family: var(--text-font);
+    font-weight: 800;
+    letter-spacing: .3rem;
 }
 .container{
     min-height: 100vh;
     width:100%;
-    padding:2rem;
+    /* padding:1rem; */
+    display: flex;
+    flex-direction: column;
+    gap:3rem;
 }
-h1{
+header{
+    /* background-color: var(--header-bg-color); */
+    display: flex;
+    justify-content: center;
+}
+header h1,footer{
     text-align: center;
+}
+header .game-logo{
+width:calc(200px + 2rem);
+height: calc(200px + 2rem);
+}
+header .game-logo:hover{
+    scale:1.03;
+}
+.container main{
+    flex:1;
+    display: flex;
+}
+main>.game-section{
+    flex:5;
+}
+main>.game-detail{
+    flex:2;
+}
+button{
+    padding:1em;
+    border-radius: var(--modal-br);
+    background: none;
+    font-size: .7rem;
+}
+dialog{
+    width:60vw;
+    height:clamp(20vh,40rem,80vh);
+    position: absolute;
+    margin: auto auto;
+    border-radius: var(--modal-br);
+    background-color: var(---body-bg-color);
+    border:none;
+}
+form{
+    height: 100%;
+}
+form fieldset{
+    border: none;
+    height:100%;
+        display: flex;
+    flex-direction: column;
+    gap:10%;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+}
+
+form input{
+/* height:1.4rem; */
+font-size: 1rem;
+padding:calc(5px + .2rem);
+width:60%;
+background-color: var(---body-bg-color);
+border-radius: 10px;
+border-color: transparent;
+background-color:  rgba(0, 24, 0, 0.083);
+   
+}
+form label{
+    width: 5rem;
+}
+input:focus,input:hover,label:has(+input:hover){
+    border-color:  rgb(0, 24, 0);
+    outline:none;
+}
+label:has(+input:hover){
+    color:rgba(0, 24, 0, 0.538);
+
 }

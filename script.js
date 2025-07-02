@@ -1,3 +1,14 @@
+const eventListneres=function(){
+function modal(){
+ document.querySelector(".start-game").addEventListener("click",showModal)   
+}
+function showModal(){
+    document.querySelector("dialog").showModal();
+}
+return{modal};
+}();
+eventListneres.modal();
+
 const Game=(function(){
 let state=false;
 const start=function(){
@@ -188,9 +199,6 @@ if(counter1===3 || counter2===3){
 //starting round
  gameControl.myTurn(1,2);
 //  gameControl.myTurn(2,2);
-
-
-   
         gameControl.myTurn(1,1);
     gameControl.myTurn(2,1);
         gameControl.myTurn(2,2);
