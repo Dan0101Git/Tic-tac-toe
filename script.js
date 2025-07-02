@@ -1,4 +1,3 @@
-// console.log("Let's do this danish!!");//time start :6::00pm
 const Game=(function(){
 let state=false;
 const start=function(){
@@ -31,7 +30,7 @@ const cell=function(){
 
 const createBoard=(function()//check baord state, render baord state
 {
-let board=[];//2-d array having cells, 3*3 array, containing 9 cells
+const board=[];//2-d array having cells, 3*3 array, containing 9 cells
 for(let i=0;i<3;i++){
     board[i]=[];
     for(let j=0;j<3;j++){
@@ -43,20 +42,23 @@ for(let i=0;i<3;i++){
 function getPosition(row,column){
      return board[row][column];
 }
-function setPosition(row,column)
+function setPosition(row,column,tac)
 {
-    board[row][column].setValue(gameControl.getPlayerTurn().getTacOption());
-    for(let i=0;i<3;i++){
-      console.log(board[i][0].getValue() +" ",board[i][1].getValue() +" ",board[i][2].getValue() +" ");   // board array is a collection of Cell Object instances
-    
-    
+    board[row][column].setValue(tac);
 }
-// console.dir(board);
+function getBoard(){
+    return board;
 }
-return{getPosition,setPosition}
+
+return{getPosition,setPosition,getBoard}
 })();
 
-
+const displayModule=function(){
+        for(let i=0;i<3;i++){
+      console.log(createBoard.getBoard()[i][0].getValue() +" ",createBoard.getBoard()[i][1].getValue() +" ",createBoard.getBoard()[i][2].getValue() +" ");   // board array is a collection of Cell Object instances 
+    
+}
+}
 
 
 //create Player factory function
@@ -93,7 +95,7 @@ const player2=Player("arora","O");
 //game Brains!
 const gameControl=(function(){
     if(Game.getState){
-            let turn =player1;
+            let turn =player2;//PLAYER 1 TAKES FIRST TURN
     let turnCount=0;
     function myTurn(row,column){
         
@@ -101,8 +103,8 @@ const gameControl=(function(){
         if(checkCell(row,column)){
             delegateTurn();
             console.log(turn.getName());
-            // console.log("hey");
-             createBoard.setPosition(row,column);
+             createBoard.setPosition(row,column,turn.getTacOption());
+             displayModule();
              turn.setPosition(row,column)
             turnCount++;
             checkRoundResult();
@@ -116,7 +118,6 @@ const gameControl=(function(){
             player2.setTurn=(turn===player2)?true:false;
     }
     function checkCell(row,column){
-    //    console.log( createBoard.getPosition(row,column).getValue()==="U");
       return createBoard.getPosition(row,column).getValue()==="U";
     }
     
@@ -137,13 +138,8 @@ return result
         return turn;
     }
 
-    return{myTurn,getPlayerTurn}   
-    }
-
-    
-})();
-
-function gameAlgo(positions){
+//game algorithm
+    function gameAlgo(positions){
     let winner;
     const players=positions;
 
@@ -159,50 +155,32 @@ function xY(){
 
     if(regex.test(players.getPosition().rows.toString()) || regex.test(players.getPosition().columns.toString()) ){
         winner=players;
+        return true;
     }
-
-if(winner)
-    return true;
 }
 function diagnal(){
-
-    let array=[];
-if(players.getPosition().rows.length>=3)
-{
-    let counter=0
-for(i=0;i<4;i++)
-{
+let counter1=0;
+let counter2=0;
+for(i=0;i<players.getPosition().rows.length;i++){
     if(players.getPosition().rows[i]===players.getPosition().columns[i])
-        counter++;
-array.push(players.getPosition().rows[i]+players.getPosition().columns[i]);
+        counter1++;//right diagnal
+    if(players.getPosition().rows[i]+players.getPosition().columns[i]===2)
+        counter2++;//left diagnol
 }
-if(counter===3)
-{
-    winner=players;
+if(counter1===3 || counter2===3){
+      winner=players
     return true;
 }
-array=array.filter((item)=>item%2===0).sort((a,b)=>a-b);
-let c;
-console.log(array);
-if(array.length>=3){
-    for(let i=0;i<array.length-1;i++)
-{
-     console.log((c && c===array[i+1]-array[i]));
-    if(((c && c===array[i+1]-array[i])===0) || (c && c===array[i+1]-array[i]))
-        winner=players;
-
-    c=array[i+1]-array[i];
-   
-}
-}
-console.log(players);
-}
-
-if(winner)
-    return true;
+  
 }
 }
 
+
+    return{myTurn,getPlayerTurn,getResult}   
+    }
+
+    
+})();
 
 
 
@@ -211,23 +189,11 @@ if(winner)
  gameControl.myTurn(1,2);
 //  gameControl.myTurn(2,2);
 
- gameControl.myTurn(0,0);
-     gameControl.myTurn(0,1);
-    //   gameControl.myTurn(0,2);
+
    
         gameControl.myTurn(1,1);
     gameControl.myTurn(2,1);
         gameControl.myTurn(2,2);
-    //  gameControl.myTurn(0,0);
-    //    gameControl.myTurn(1,0);
-    //     gameControl.myTurn(2,0);
-
-
-
-
-
- //  console.log(Game.getState());
-// console.log(player1,player2);
 
 
 
