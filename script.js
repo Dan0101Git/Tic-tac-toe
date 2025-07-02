@@ -1,14 +1,61 @@
 const eventListneres=function(){
-function modal(){
+    const modal= document.querySelector("dialog");
+function modalDisplay(){
  document.querySelector(".start-game").addEventListener("click",showModal)   
 }
 function showModal(){
-    document.querySelector("dialog").showModal();
+   modal.showModal();
 }
-return{modal};
-}();
-eventListneres.modal();
+function formValidation(){
+    document.querySelector(".modal-submit").addEventListener("click",checkValidation);
+   
+}
+function checkValidation(e){
+    let flag=1;
+    e.preventDefault();
+    const requiredInputs=Array.from(document.querySelectorAll("input"));    
+   requiredInputs.forEach((input)=>{
+    input.value? input.className="":flag=0; });
+    flag?designatePlayer(requiredInputs):requiredInputs.forEach((input)=>{input.className="empty"})
+}
 
+function designatePlayer(inputs){
+    const player1=Player(inputs[0].value,"X");
+    const player2=Player(inputs[1].value,"O");
+disableModal();
+    Game.start();
+
+gameControl.setPlayers([player1,player2])
+}
+function disableModal(){
+modal.close();
+}
+return{modalDisplay,formValidation};
+}();
+eventListneres.modalDisplay();
+eventListneres.formValidation();
+
+
+
+const takeInput=(function(){//take input from dom
+document.querySelector(".game-grid").addEventListener("click",setUserInput);
+function setUserInput(e){
+    if(Game.getState()){
+           let arr=e.target.getAttribute("data-set").split(" ");
+    console.log(arr,Game.getState());
+   let row= arr[0];
+   let column=arr[1];
+    gameControl.myTurn(row,column);
+    }
+ 
+}
+return 
+})();
+
+
+
+
+//
 const Game=(function(){
 let state=false;
 const start=function(){
@@ -23,7 +70,7 @@ const getState=function(){
     return {getState,start,stop}
 })();
 //start game
-    Game.start();
+    // Game.start();
 
 const cell=function(){
     let value="U";
@@ -98,16 +145,26 @@ const Player=function(playerName,option)
     return {getTacOption,setTurn,setPosition,getPosition,getName}
 }
 
-const player1=Player("danish","X");
-const player2=Player("arora","O");
+// const player1=Player("danish","X");
+// const player2=Player("arora","O");
 
 
 
 //game Brains!
 const gameControl=(function(){
-    if(Game.getState){
-            let turn =player2;//PLAYER 1 TAKES FIRST TURN
+    // if(Game.getState()){
+        console.log(Game.getState())
+            let turn ;//PLAYER 1 TAKES FIRST TURN
+            let player1;
+            let player2;
     let turnCount=0;
+    function setPlayers(players){
+        player2=players[1];
+        turn=player2;
+        player1=players[0];
+        console.log(players);
+
+    }
     function myTurn(row,column){
         
         
@@ -175,33 +232,18 @@ let counter2=0;
 for(i=0;i<players.getPosition().rows.length;i++){
     if(players.getPosition().rows[i]===players.getPosition().columns[i])
         counter1++;//right diagnal
-    if(players.getPosition().rows[i]+players.getPosition().columns[i]===2)
+    if(parseInt(players.getPosition().rows[i])+parseInt(players.getPosition().columns[i])===2)
         counter2++;//left diagnol
+   console.log( players.getPosition().rows[i]+players.getPosition().columns[i]);
 }
 if(counter1===3 || counter2===3){
       winner=players
     return true;
+} 
 }
-  
-}
-}
-
-
-    return{myTurn,getPlayerTurn,getResult}   
+}   return{myTurn,getPlayerTurn,getResult,setPlayers}   
     }
-
-    
-})();
-
-
-
-
-//starting round
- gameControl.myTurn(1,2);
-//  gameControl.myTurn(2,2);
-        gameControl.myTurn(1,1);
-    gameControl.myTurn(2,1);
-        gameControl.myTurn(2,2);
-
+// }
+   )();
 
 

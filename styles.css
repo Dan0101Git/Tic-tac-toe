@@ -54,6 +54,7 @@ header .game-logo:hover{
 .container main{
     flex:1;
     display: flex;
+    align-items: center;
 }
 main>.game-section{
     flex:5;
@@ -73,7 +74,7 @@ main>.game-detail{
     display: grid;
     grid-template-columns: repeat(3,1fr);
     grid-template-rows: repeat(3,1fr);
-gap: 5px;
+gap: 7px;
 }
 .game-grid>div{
     box-shadow: inset 0 0 0 1px #e8e8e8; /* hand-drawn vibe */
@@ -88,7 +89,7 @@ align-items: center;
 
 }
 .game-grid>div:hover {
-  background-color: #fbf9f6;
+  background-color: #fffcf74a;
   box-shadow: 0 2px 4px rgba(87, 87, 87, 0.2); /* subtle depth */
 }
 button{
@@ -110,6 +111,9 @@ dialog{
     border-radius: var(--modal-br);
     background-color: var(---body-bg-color);
     border:none;
+}
+dialog::backdrop{
+background: rgba(0,0,0,0.6 );
 }
 form{
     height: 100%;
@@ -146,4 +150,24 @@ input:focus,input:hover,label:has(+input:hover){
 label:has(+input:hover){
     color:rgba(0, 24, 0, 0.538);
 
+}
+input:required.empty{
+    border: 2px solid var(---body-bg-color);
+  
+}
+label:has(+input:required:invalid.empty){
+    position: relative;
+    color: var(--font-color);
+}
+label:has(+input:required:invalid.empty)::after{
+    content: "player Required :/";
+    position: absolute;
+    background-color: var(--font-color);
+    color:var(---body-bg-color);
+    top:-2em;
+    font-size:calc(.2rem + 3px);
+    padding:.4em;
+    letter-spacing: .2em;
+    border-radius: .3rem;
+    right: 1em;
 }

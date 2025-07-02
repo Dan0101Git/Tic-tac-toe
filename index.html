@@ -18,24 +18,24 @@
      <main>
         <section class="game-section">
             <div class="game-grid">
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
-                <div class="grid-cell"></div>
+                <div class="grid-cell" data-set="0 0"></div>
+                <div class="grid-cell" data-set="0 1"></div>
+                <div class="grid-cell" data-set="0 2"></div>
+                <div class="grid-cell" data-set="1 0"></div>
+                <div class="grid-cell" data-set="1 1"></div>
+                <div class="grid-cell" data-set="1 2"></div>
+                <div class="grid-cell" data-set="2 0"></div>
+                <div class="grid-cell" data-set="2 1"></div>
+                <div class="grid-cell" data-set="2 2"></div>
             </div>
         </section>
         <section class="game-detail">
             <button><div class="start-game">Start Game</div></button>
         <dialog closedby><form formmethod="dialog" action="">
             <fieldset>
-                <div class="take-input"><label for="first-player">Player 1 </label><input type="text" id="first-player"></div>
-                <div class="take-input"><label for="second-player">Player 2</label><input type="text" id="second-player"></div>
-                <div class="take-input"><button type="submit">Start</button></div>
+                <div class="take-input"><label for="player1">Player 1 </label><input type="text" required id="player1"></div>
+                <div class="take-input"><label for="player2">Player 2</label><input type="text" required id="player2"></div>
+                <div class="take-input"><button class="modal-submit" type="submit">Start</button></div>
             </fieldset>
         </form></dialog>
         </section>
