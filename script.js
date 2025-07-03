@@ -20,12 +20,15 @@ function checkValidation(e){
 }
 
 function designatePlayer(inputs){
-    const player1=Player(inputs[0].value,"X");
+    const player1=Player(inputs[0].value,"X");//inputing players adn dmaking instances of them
     const player2=Player(inputs[1].value,"O");
-disableModal();
-    Game.start();
-
-gameControl.setPlayers([player1,player2])
+    domToBackend([player1,player2]);//settinsg players fro the round
+}
+function domToBackend(players){
+    disableModal();
+    Game.start();//start the game
+    document.querySelector(".start-game").removeEventListener("click",showModal);//no onne can start new game amidst on going rounds
+    roundController.setRoundPlayers(players);//interaction 1
 }
 function disableModal(){
 modal.close();
@@ -38,18 +41,24 @@ eventListneres.formValidation();
 
 
 const takeInput=(function(){//take input from dom
-document.querySelector(".game-grid").addEventListener("click",setUserInput);
+const grid=document.querySelector(".game-grid");
+grid.addEventListener("click",setUserInput);
+let cell;
 function setUserInput(e){
     if(Game.getState()){
            let arr=e.target.getAttribute("data-set").split(" ");
     console.log(arr,Game.getState());
    let row= arr[0];
    let column=arr[1];
-    gameControl.myTurn(row,column);
+   cell=e.target;
+    gameControl.myTurn(row,column); //interaction 2
     }
- 
+    
 }
-return 
+function getGrid(){
+    return grid;
+}
+return {getGrid}
 })();
 
 
@@ -73,7 +82,7 @@ const getState=function(){
     // Game.start();
 
 const cell=function(){
-    let value="U";
+    let value="";
     function setValue(playerValue){
         value=playerValue;
     }
@@ -100,22 +109,44 @@ for(let i=0;i<3;i++){
 function getPosition(row,column){
      return board[row][column];
 }
-function setPosition(row,column,tac)
+function setPosition(row,column,tac)//for each turn
 {
     board[row][column].setValue(tac);
+      displayModule(); //interaction 4
 }
+function reset(){
+    for(let i=0;i<3;i++){
+    for(let j=0;j<3;j++){
+       board[i][j].setValue("");  //reset the baord after each round or game
+   
+    }
+}
+displayModule();//interaction 3
+}
+
 function getBoard(){
     return board;
 }
 
-return{getPosition,setPosition,getBoard}
+
+return{getPosition,setPosition,getBoard,reset}
 })();
 
-const displayModule=function(){
-        for(let i=0;i<3;i++){
-      console.log(createBoard.getBoard()[i][0].getValue() +" ",createBoard.getBoard()[i][1].getValue() +" ",createBoard.getBoard()[i][2].getValue() +" ");   // board array is a collection of Cell Object instances 
+const displayModule=function(){//or render
+    let grid=Array.from(takeInput.getGrid().children);
+    let c=0;
+    // console.log(grid);
+        // for(let i=0;i<3;i++){
+    for(let i=0;i<3;i++){
+            //   console.log(createBoard.getBoard()[i][0].getValue() +" ",createBoard.getBoard()[i][1].getValue() +" ",createBoard.getBoard()[i][2].getValue() +" ");   // board array is a collection of Cell Object instances 
+
+    for(let j=0;j<3;j++){
+       grid[c].textContent=createBoard.getBoard()[i][j].getValue();
+       c++;
     
+    }
 }
+// }
 }
 
 
@@ -126,6 +157,7 @@ const Player=function(playerName,option)
     let name=playerName;
     let tacOption=option;
     let turn=false;
+    let score=0;
     const getTacOption=function(){
         return tacOption;
     }
@@ -142,7 +174,16 @@ const Player=function(playerName,option)
      function getName(){
         return name;
      }
-    return {getTacOption,setTurn,setPosition,getPosition,getName}
+     function getScore(){
+        return score;
+     }
+     function setScore(){
+        score++;
+     }
+     function resetPlayerStats(){
+        position={rows:[],columns:[]}
+     }
+    return {getTacOption,setTurn,setPosition,getPosition,getName,setScore,getScore,resetPlayerStats}
 }
 
 // const player1=Player("danish","X");
@@ -153,27 +194,26 @@ const Player=function(playerName,option)
 //game Brains!
 const gameControl=(function(){
     // if(Game.getState()){
+    let roundPlayers=[];
         console.log(Game.getState())
             let turn ;//PLAYER 1 TAKES FIRST TURN
             let player1;
             let player2;
     let turnCount=0;
-    function setPlayers(players){
-        player2=players[1];
-        turn=player2;
-        player1=players[0];
-        console.log(players);
+    function setPlayers(players,turn=players[1]){
+    roundPlayers=players;
+      
 
     }
-    function myTurn(row,column){
+    function myTurn(row,column){//controls the turn(master controller of each turn)
         
         
         if(checkCell(row,column)){
             delegateTurn();
             console.log(turn.getName());
              createBoard.setPosition(row,column,turn.getTacOption());
-             displayModule();
-             turn.setPosition(row,column)
+            
+             turn.setPosition(row,column);
             turnCount++;
             checkRoundResult();
         }
@@ -181,40 +221,44 @@ const gameControl=(function(){
         return;
     }
       function delegateTurn(){
-            turn=(turn===player1)?player2:player1;
-            player1.setTurn=(turn===player1)?true:false;
-            player2.setTurn=(turn===player2)?true:false;
+            turn=(turn===roundPlayers[0])?roundPlayers[1]:roundPlayers[0];//switches turn
     }
     function checkCell(row,column){
-      return createBoard.getPosition(row,column).getValue()==="U";
+      return createBoard.getPosition(row,column).getValue()==="";
     }
     
     function checkRoundResult(){
         
        if(result=gameAlgo(turn)){    
-        getResult(result);    
+        getResult(result);   
+         
         Game.stop(); 
+
+        roundController.setRoundResult(result);
         return;
 }
     }
     function getResult(result){
+        if(result!=="draw")
         console.log(`winner is ${result.getName()}`);
+    else
+    console.log(`it's a ${result}`)
 return result
     }
 
-    function getPlayerTurn(){
-        return turn;
+    function setPlayerTurn(InitialTurn){
+         turn=InitialTurn;
     }
 
 //game algorithm
     function gameAlgo(positions){
     let winner;
     const players=positions;
-
+console.log(turnCount)
     if(xY() || diagnal())
         return winner;
-    else if(gameControl.turnCount===9)
-        return draw;
+    else if(turnCount===9)
+        return "draw";
      else 
         false;
     
@@ -234,16 +278,82 @@ for(i=0;i<players.getPosition().rows.length;i++){
         counter1++;//right diagnal
     if(parseInt(players.getPosition().rows[i])+parseInt(players.getPosition().columns[i])===2)
         counter2++;//left diagnol
-   console.log( players.getPosition().rows[i]+players.getPosition().columns[i]);
 }
 if(counter1===3 || counter2===3){
       winner=players
     return true;
 } 
 }
-}   return{myTurn,getPlayerTurn,getResult,setPlayers}   
+}
+function resetGameControl(){
+    turnCount=0;
+}
+return{myTurn,setPlayerTurn,getResult,setPlayers,checkRoundResult,resetGameControl}   
     }
 // }
    )();
+
+
+
+   const roundController=(function(){//controls game flow and manages game ctroller iife, form submission -> roundcontroller->game cntroller
+    let roundCount=0;let player1;
+    let player2;
+    let initialRoundTurn;
+    let roundResult;
+    let finalResult;
+
+    function setRoundPlayers(players,turn=players[1]){
+      player2=players[1];
+        initialRoundTurn=turn;
+        player1=players[0];
+        console.log(players);
+        gameControl.setPlayers(players,initialRoundTurn);
+       
+    }
+    function setRoundResult(result){
+        roundCount++;
+        if(result!=="draw"){
+
+            result===player1?player1.setScore():player2.setScore();
+            roundResult=result.getName();
+        }
+        else
+        {            
+            roundResult="It's a draw";
+        }
+        console.log(roundResult,result.getScore(),roundCount,initialRoundTurn);
+        prepareNextRound();
+        
+    }
+    function prepareNextRound(){
+        if(roundCount<3){   
+              Game.start();
+        gameControl.setPlayerTurn(initialRoundTurn);//set turn for next round
+        gameControl.resetGameControl();
+        player1.resetPlayerStats();
+        player2.resetPlayerStats();
+        }
+        else{
+            Game.stop();
+            getGameResult();
+        } 
+        createBoard.reset();//reset the  entire board in the backend
+   
+    }
+    function  getGameResult(){
+        if(player1.getScore===player2.getScore)
+            return "Game is a draw "
+        else{
+            return player1.getScore>player2.getScore?player1.name:player2.name;
+        }
+    }
+    function getscoreBoard(){
+        return [player1.getScore(),player2.getScore()];
+    }
+    function getRoundResult(){
+        return [roundResult,getscoreBoard()];
+    }
+    return{setRoundPlayers,setRoundResult,getRoundResult,getGameResult}
+   })();
 
 
