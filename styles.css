@@ -119,6 +119,12 @@ button,.display-players>*{
 .display-players>*{
     border:2px solid var(--font-color);
 }
+.my-turn{
+    border:2px solid darkgreen;
+    scale:1.1;
+      box-shadow: 0 2px 4px rgba(87, 87, 87, 0.2); /* subtle depth */
+     
+}
 button:hover
 {
       color:rgba(0, 24, 0, 0.538);
