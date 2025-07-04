@@ -17,7 +17,7 @@ html,body{
     background-color: var(---body-bg-color);
     color:var(--font-color);
     font-size: var(--base-font-size);
-
+overflow: hidden;
 }
 main,footer,header,button,div,input{
     font-family: var(--text-font);
@@ -25,7 +25,7 @@ main,footer,header,button,div,input{
     letter-spacing: .3rem;
 }
 .container{
-    min-height: 100vh;
+    height: 100vh;
     width:100%;
     /* padding:1rem; */
     display: flex;
@@ -58,16 +58,15 @@ footer{
     flex:1;
     display: flex;
     align-items: center;
+    justify-content: center;
+    flex-direction: column;
 }
-main>.game-section{
-    flex:3;
+.game-section{
+  
 }
 
-main>.game-detail{
-    flex:2;
-}
 .game-grid{
- width: min(90vmin, 500px);
+ width: clamp(25vw,20rem ,550px);
 
     /* height: 100%; */
     /* border:3px solid whitesmoke; */
@@ -79,56 +78,79 @@ main>.game-detail{
     grid-template-rows: repeat(3,1fr);
 gap: 7px;
 overflow: hidden;
+flex: 3;
 }
 .game-grid>div{
-    box-shadow: inset 0 0 0 1px #e8e8e8; /* hand-drawn vibe */
-      /* border: 1px solid #999999; Subtle but clear */
-  background-color: #f5eee0; /* Soft beige highlight */
-  transition: background-color 0.2s, box-shadow 0.2s;
-  /* border-top: none; */
+   
+  background-color: #f5e9d3; /* or your chosen tone */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out;
+background-image: radial-gradient(var(---body-bg-color),rgba(255, 255, 255, 0.299));
+
   border-radius: 5px;
 display: flex;
 justify-content: center;
 align-items: center;
 line-height: 1;
-font-size: 2.5rem;
+font-size: 1.5rem;
+overflow: hidden;
 
 }
 .game-grid>div:hover {
-  background-color: #fffcf74a;
+  background-color: #5d5d5d2a;
   box-shadow: 0 2px 4px rgba(87, 87, 87, 0.2); /* subtle depth */
 }
-.game-detail{
-    display: flex;
-    flex-direction: column;
-    gap:3rem;
-    padding:0 1rem;
-    
-}
-button,.display-players>*{
+
+button,.display-players *{
     padding:1em;
     border-radius: var(--modal-br);
     background: none;
     font-size: .7rem;
 }
 .display-players{
+    width: 100%;
     display: flex;
     gap:1rem;
     justify-content: center;
+    overflow: hidden;
+    align-items: center;
 }
 .display-players>*{
-    border:2px solid var(--font-color);
+    /* border:2px solid var(--font-color); */
+    display: flex;
+    flex-direction: column;
+    gap:4rem;
+    align-items: center;
 }
-.my-turn{
+.score{
+    text-align: center;
+    border: 2px solid transparent;
+    padding:.5rem;
+  font-size: 1.5rem;
+  width:3rem;
+  background-color: #57575710;
+}
+.player-name.my-turn{
     border:2px solid darkgreen;
     scale:1.1;
-      box-shadow: 0 2px 4px rgba(87, 87, 87, 0.2); /* subtle depth */
+      box-shadow: 0 2px 8px rgba(87, 87, 87, 0.2); /* subtle depth */
      
+}
+.player-name{
+    border:2px solid transparent;
+     max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 button:hover
 {
       color:rgba(0, 24, 0, 0.538);
       scale:1.01;
+}
+.result{
+      transform: scale(0.9);
+  transition: all 0.25s ease;
+ 
 }
 dialog{
     width:60vw;
@@ -167,8 +189,17 @@ border-color: transparent;
 background-color:  rgba(0, 24, 0, 0.083);
    
 }
+div.inputs{
+    display:flex;
+    justify-content: center;
+}
+form div.take-input{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 form label{
-    width: 5rem;
+    /* width: 5rem; */
 }
 input:focus,input:hover,label:has(+input:hover){
     border-color:  rgb(0, 24, 0);

@@ -63,6 +63,7 @@ function setUserInput(e){
    let row= arr[0];
    let column=arr[1];
    cell=e.target;
+   document.querySelector(".result").textContent=""
     gameControl.myTurn(row,column); //interaction 2
     }
     
@@ -103,19 +104,20 @@ if(previousTurn)
 previousTurn=document.querySelector(`div[data-set=${turn.getName()}]`);
 }
 
-function updateRoundResult(result,scoreBoard){
-
-console.log(typeof result[0])
-document.querySelector(".result"). textContent=(typeof result[0]==="string")?result[0]:`${result[0].getName()} IS THE WINNER!!!`;
-
+function updateRoundResult(result){
+let scoreBoard=result[1];
+document.querySelector(".result"). textContent=(typeof result[0]==="string")?result[0]:`${result[0].getName()} WINS!!!`;
+let arr=Array.from(document.querySelectorAll(".score"))
+console.log(scoreBoard[0]);
+for(let i=0;i<2;i++)
+arr[i].textContent=scoreBoard[i];
 }
 
 function setPlayers(inputs){
-    // console.log(Array.from(document.querySelector(".display-players").children));
     document.querySelector(".player1").classList.add("my-turn");//setting initial turn in dom
     for(let i=0;i<2;i++){
-Array.from(document.querySelector(".display-players").children)[i].textContent=inputs[i].name+" "+ inputs[i].tac;
-Array.from(document.querySelector(".display-players").children)[i].setAttribute("data-set",inputs[i].name);
+Array.from(document.querySelectorAll(".player-name"))[i].textContent=inputs[i].name+" "+ inputs[i].tac ;
+Array.from(document.querySelectorAll(".player-name"))[i].setAttribute("data-set",inputs[i].name);
     }
 }
     return {displayModule,setPlayers,updateRoundResult}
@@ -355,13 +357,13 @@ return{myTurn,setPlayerTurn,setPlayers,checkRoundResult,resetGameControl}
     function setRoundResult(result){
         roundCount++;
         if(result!=="draw"){
-
-            result===player1?player1.setScore():player2.setScore();
+           console.log(result);
+            (result===player1)?player1.setScore():player2.setScore();
             roundResult=result;
         }
         else
         {            
-            roundResult="It's a draw";
+            roundResult="It's a draw :((";
         }
         // console.log(roundResult,result.getScore(),roundCount,initialRoundTurn);
         // render.updatePlayers()//mark
@@ -382,14 +384,14 @@ return{myTurn,setPlayerTurn,setPlayers,checkRoundResult,resetGameControl}
             getGameResult();
         } 
         createBoard.reset(player2);//reset the  entire board in the backend
-        console.log(roundResult);
+        console.log(getRoundResult()[1]);
         render.updateRoundResult(getRoundResult());
     }
     function  getGameResult(){
-        if(player1.getScore===player2.getScore)
+        if(player1.getScore()===player2.getScore())
             return "Game is a draw ";
         else{
-            return player1.getScore>player2.getScore?player1.name:player2.name;
+            return player1.getScore()>player2.getScore()?player1.getName():player2.getName;
         }
     }
     function getscoreBoard(){

@@ -16,7 +16,14 @@
             <h1>Tic-Tac-Toe</h1>
 </header>
      <main>
-        <section class="game-section">
+
+        
+            <div class="display-players">
+            <div class="player1-box">
+                 <div class="player-name player1">Player 1</div>
+                    <div class="score player1-score" >0</div>
+            </div>   
+                    <section class="game-section">
             <div class="game-grid">
                 <div class="grid-cell" data-set="0 0"></div>
                 <div class="grid-cell" data-set="0 1"></div>
@@ -29,21 +36,26 @@
                 <div class="grid-cell" data-set="2 2"></div>
             </div>
         </section>
-        <section class="game-detail">
-            <div class="display-players">
-                <div class="player1">Player 1</div>
-                <div class="player2">Player 2</div>
+            <div class="player2-box">
+                   <div class="player-name player2">Player 2</div>
+                 <div class="score player2-score">0</div>
+            </div>
+             
+
             </div>
             <!-- <button><div class="start-game">Add Players</div></button> -->
              <p class="result"></p>
         <dialog closedby><form formmethod="dialog" action="">
             <fieldset>
-                <div class="take-input"><label for="player1">Player 1 </label><input type="text" required id="player1"></div>
+                <div class="inputs">
+                     <div class="take-input"><label for="player1">Player 1 </label><input type="text" required id="player1"></div>
                 <div class="take-input"><label for="player2">Player 2</label><input type="text" required id="player2"></div>
+                </div>
+               
                 <div class="take-input"><button class="modal-submit" type="submit">Start</button></div>
             </fieldset>
         </form></dialog>
-        </section>
+    
      </main>   
      <footer>Created by @Danish</footer>
     </div>
