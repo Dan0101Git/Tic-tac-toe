@@ -31,6 +31,7 @@ main,footer,header,button,div,input{
     display: flex;
     flex-direction: column;
     gap:1.5rem;
+    position: relative;
 }
 header{
     /* background-color: var(--header-bg-color); */
@@ -92,7 +93,7 @@ display: flex;
 justify-content: center;
 align-items: center;
 line-height: 1;
-font-size: 1.5rem;
+font-size: 2rem;
 overflow: hidden;
 
 }
@@ -127,7 +128,7 @@ button,.display-players *{
     border: 2px solid transparent;
     padding:.5rem;
   font-size: 1.5rem;
-  width:3rem;
+  width:4rem;
   background-color: #57575710;
 }
 .player-name.my-turn{
@@ -150,7 +151,8 @@ button:hover
 .result{
       transform: scale(0.9);
   transition: all 0.25s ease;
- 
+ height: 2rem;
+ font-size: 1.5rem;
 }
 dialog{
     width:60vw;
@@ -192,14 +194,17 @@ background-color:  rgba(0, 24, 0, 0.083);
 div.inputs{
     display:flex;
     justify-content: center;
+    gap:1rem;
 }
 form div.take-input{
     display: flex;
     flex-direction: column;
+    gap:.3rem;
     align-items: center;
 }
 form label{
     /* width: 5rem; */
+    font-size: 1.4rem;
 }
 input:focus,input:hover,label:has(+input:hover){
     border-color:  rgb(0, 24, 0);
@@ -221,11 +226,36 @@ label:has(+input:required:invalid.empty)::after{
     content: "player Required :/";
     position: absolute;
     background-color: var(--font-color);
-    color:var(--body-bg-color);
+    color:beige;
     top:-2em;
     font-size:calc(.2rem + 3px);
-    padding:.4em;
+    padding:.8em;
     letter-spacing: .2em;
     border-radius: .3rem;
     right: 1em;
+}
+.vs{
+    align-self: center;
+}
+.round{
+    position: absolute;
+    top:50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  font-size: 2.5rem;
+  font-weight: bold;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1s ease-in-out;
+  z-index: 10;
+  color: #444;
+}
+.round.show{
+    opacity: 1;
+}
+.grid-cell{
+    position: relative;
+}
+.grid-cell svg{
+    position: absolute;
 }
