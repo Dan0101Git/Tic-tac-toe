@@ -40,7 +40,7 @@ const domController = (function () {  // dom module 1
     }
     
     function setUserInput(e){
-    if(game.getState()){
+    if(game.getState() && roundState.getState()){
            let arr=e.target.getAttribute("data-set").split(" ");
    document.querySelector(".result").textContent=""
     gameControl.myTurn(arr[0],arr[1]); //interaction 2
@@ -223,7 +223,6 @@ const Player=function(playerName,option)
     const getTacOption=function(){
         return tacOption;
     }
-    
     const setTurn=function(playerTurn){
         turn=playerTurn;
     }
