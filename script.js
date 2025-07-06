@@ -212,41 +212,11 @@ return{getPosition,setPosition,getBoard,boardReset}})();
 
 
 //create Player factory function
-const Player=function(playerName,option)
-{
-    let position={rows:[],columns:[]};
-    let name=playerName;
-    let tacOption=option;
-    let turn=false;
-    let score=0;
-    let winPattern=[];
-    const getTacOption=function(){
-        return tacOption;
-    }
-    const setTurn=function(playerTurn){
-        turn=playerTurn;
-    }
-     function setPosition(row,column){
-        position.rows.push(row);
-        position.columns.push(column)
-     }
-     function getPosition(){
-        return position;
-     }
-     function getName(){
-        return name;
-     }
-     function getScore(){
-        return score;
-     }
-     function setScore(){
-        score++;
-     }
-     function resetPlayerStats(){
-        position={rows:[],columns:[]} }
-            const setWinningArray=(arr)=>{     winPattern=arr;  };
-            const getWinPattern=()=>{return winPattern}
-            return {getTacOption,setTurn,setPosition,getPosition,getName,setScore,getScore,resetPlayerStats,setWinningArray,getWinPattern}}
+const Player=function(name,tac,score){
+    this.name=name;
+    this.tac=tac;
+    this.score=score;
+}
 ///////////////////////////////////////////////////////////
 
         //game Brains!

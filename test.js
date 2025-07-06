@@ -53,15 +53,17 @@ const roundController=(function(){//controls game flow and manages game ctroller
 
         //game Brains!
 const gameControl=(function(){
+     const state= masterState.getState();
     let roundPlayers=[];
+    let roundScore=0;//to track round score
     let InitialTurn;
             let turn ;//PLAYER 1 AKES FIRST TURN
     let turnCount=0;
-    function setPlayers(players){
-    roundPlayers=players;
-        turn=players[0];
-        InitialTurn=turn;
-    }
+    function setPlayers(playerNames){
+  state.players.player1=new Player(playerNames[0],"X",0)
+  state.players.player1=new Player(playerNames[1],"O",0)
+
+}
     function myTurn(row,column){//controls the turn(master controller of each turn)
           if(checkCell(row,column)){
             turn.setPosition(row,column);//sgive that position ot player
@@ -91,8 +93,8 @@ const gameControl=(function(){
           function checkCell(row,column){return createBoard.getPosition(row,column).getValue()==="";}
     
           function checkRoundResult(){
-       if(result=gameAlgo()){       
-                  roundController.setRoundResult(result);//sending rond controller ot set result
+       if(result=checkWinner()){       
+            roundController.setRoundResult(result);//sending rond controller ot set result
            return true;}
             return false
          }
@@ -101,40 +103,22 @@ const gameControl=(function(){
          }
 
 //game algorithm
-    function gameAlgo(){
-         let winner;
-         const players=turn;
-        const playerPosition=players.getPosition();
-        if(xY() || diagnal())
-            return winner;
-         else if(turnCount===9)
-            return "It's a draw :((";
-         else 
-             false;
-    
-         function xY(){
-                let regex=/(?:.*([0-9]).*?\1.*?\1)/;let arr=[];
-             if(regex.test(playerPosition.rows.toString()) || regex.test(playerPosition.columns.toString()) ){
-                winner=players;
-                 arr.push(`${playerPosition.rows[i]} ${playerPosition.columns[i]}`);
-                 winner.setWinningArray(arr);
-             return true; }
-                        }
-        function diagnal(){
-                let counter1=0;let arr1=[];let arr2=[];let counter2=0;
-                for(i=0;i<playerPosition.rows.length;i++){
-                    if(playerPosition.rows[i]===playerPosition.columns[i])
-                        {   counter1++;
-                            arr1.push(`${playerPosition.rows[i]} ${playerPosition.columns[i]}`);
-                             } //right diagnal
-                    if(parseInt(playerPosition.rows[i])+parseInt(playerPosition.columns[i])===2)
-                        {   counter2++;
-                            arr2.push(`${playerPosition.rows[i]} ${playerPosition.columns[i]}`); }//left diagnol
-                        }
-        if(counter1===3 || counter2===3){
-             winner=players;
-            winner.setWinningArray(counter1===3?arr1:arr2);//push th ewinning array format to winner player which ever diagnol pattern  won
-            return true;}}}
+    function checkWinner(board,turn){
+    const patterns=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  const winningPattern = patterns.find(pattern =>
+    pattern.every(index => board[index] === turn));
+  return winningPattern || null; // null if no win
+    }
+            function checkGameResult(){
+                if(roundScore>=3){
+                    game.stop();
+                    if(player1.getScore===player2.getScore())
+                        return "GAME IS A DRAW"
+                return player1.getScore()>player2.getScore()?`${player1.getName()} WINS THE ENTIRE GAME!!!!`:`${player2.getName()} WINS THE ENTIRE GAME!!!!`;
+
+                }
+                else return;
+            }
     return{myTurn,setPlayers,checkRoundResult}  })();
 
 
@@ -228,3 +212,21 @@ const render = function () { // render the DOM (receives updates from backend)
     return { displayModule,  setPlayers, updateRoundResult, viewRound, makeRoundAnimation };}();
 
 
+
+const masterState=(function(){
+    const state={
+        board:Array(9),
+        players:{} ,//this contains insatnecs of Player
+        state:"", //gameStart||ongoing,roundend or gameend
+        roundWinner:"",
+        isDraw:"false",
+    };
+const copyMasterState=Object.assign(state);
+function getState(){
+    return copyMasterState;
+}
+function updateState(newSate){
+copyMasterState=newSate;
+}
+return {getState,updateState}
+})();

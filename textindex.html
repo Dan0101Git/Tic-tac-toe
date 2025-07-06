@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticing-tacing</title>
+    <link rel="stylesheet" href="teststyle.css">
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gloria+Hallelujah&family=Patrick+Hand&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>    
+            <img src="images/game2.png" alt="" class="game-logo">    
+            <h1>Tic-Tac-Toe</h1>
+</header>
+     <main>
+
+        
+            <div class="display-players">
+            <div class="player1-box">
+                 <div class="player-name player1">Player 1</div>
+                    <div class="score player1-score" >0</div>
+            </div>   
+                    <section class="game-section">
+            <div class="game-grid">
+                <div class="grid-cell" data-set="0"></div>
+                <div class="grid-cell" data-set="1"></div>
+                <div class="grid-cell" data-set="2"></div>
+                <div class="grid-cell" data-set="3"></div>
+                <div class="grid-cell" data-set="4"></div>
+                <div class="grid-cell" data-set="5"></div>
+                <div class="grid-cell" data-set="6"></div>
+                <div class="grid-cell" data-set="7"></div>
+                <div class="grid-cell" data-set="8"></div>
+            </div>
+        </section>
+            <div class="player2-box">
+                   <div class="player-name player2">Player 2</div>
+                 <div class="score player2-score">0</div>
+            </div>
+             
+
+            </div>
+            <!-- <button><div class="start-game">Add Players</div></button> -->
+             <p class="result"></p>
+             <div class="round">Round 1</div>
+        <dialog closedby><form formmethod="dialog" action="">
+            <fieldset>
+                <div class="inputs">
+                     <div class="take-input"><label for="player1">Player 1 </label><input type="text" required id="player1"></div>
+                     <div class="vs">VS</div>
+                <div class="take-input"><label for="player2">Player 2</label><input type="text" required id="player2"></div>
+                </div>
+               
+                <div class="take-input"><button class="modal-submit" type="submit">Start</button></div>
+            </fieldset>
+        </form></dialog>
+    
+     </main>   
+     <footer>Created by @Danish</footer>
+    </div>
+<script src="smalltest.js"></script>
+</body>
+</html>
