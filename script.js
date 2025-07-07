@@ -27,7 +27,9 @@ const domController = (function () {  // dom module 1
     function domToBackend(players) {
         disableModal(modalInput);
         disableModal(modalEnd);
-        modalEnd.classList.remove("show")
+        modalEnd.classList.remove("show");
+        if(document.querySelector(".winner"))
+        document.querySelector(".winner").classList.remove("winner")
         gameController.setPlayers(players); // interaction 1
     }
 
@@ -141,7 +143,7 @@ const gameController = (function () {
                 console.log(newState);
               if(checkGameResult(newState,[newState.players.player1.score,newState.players.player2.score]))
              {console.log(newState);
-              setTimeout(()=>{helpers.updateCurrentstate(newState);},2500)
+              setTimeout(()=>{helpers.updateCurrentstate(newState);},800)
               return;
              } 
                 setTimeout(() => {
@@ -154,7 +156,7 @@ const gameController = (function () {
                     newRoundState.roundScore = newState.roundScore++;
                     console.log(newRoundState);
                     helpers.updateCurrentstate(newRoundState);
-                }, 1300);
+                }, 800);
             }
         } else return;
     }
@@ -183,6 +185,7 @@ function checkGameResult(roundState,scores){
     else
    roundState.roundWinner=scores[0]>scores[1]?`${roundState.players.player1.name} WON!!!`:`${roundState.players.player2.name} won the ENTIRE GAME!!!`
   roundState.gameState="gameEnd";
+  roundState.gameWinner=scores[0]>scores[1]?roundState.players.player1:roundState.players.player2;
   console.log(roundState);
   }
 else return false;
@@ -259,7 +262,7 @@ const render = (function () { // render the DOM (receives updates from backend)
         }
         else{
 updateRoundResult(newState.roundWinner,newState.players);
-updateFinalResult(newState.roundWinner,[[newState.players.player1.name,newState.players.player1.score],[newState.players.player2.name,newState.players.player2.score]])
+updateFinalResult(newState.gameWinner,newState.roundWinner,[[newState.players.player1.name,newState.players.player1.score],[newState.players.player2.name,newState.players.player2.score]])
 resetFormInputs();       
 }
     }
@@ -289,21 +292,23 @@ resetFormInputs();
         for (let i = 0; i < 2; i++)
             arr[i].textContent = scoreBoard[i];
     }
-    function updateFinalResult(gameResult,players)
+    function updateFinalResult(gameWinner,gameResult,players)
     {
       modal.classList.add("show");
       modal.showModal();
       console.log(finalResult);
       finalResult.textContent=gameResult;
        resultPara.textContent = "";
-      console.log(playerElem[3]); 
+      console.log(gameWinner); 
       for(let i=2;i<=3;i++)
       {
         console.log(playerElem[i]);
         playerElem[i].textContent=players[i-2][0];
         arr[i].textContent=players[i-2][1];
+        if(playerElem[i].textContent===gameWinner.name)
+            playerElem[i].classList.add("winner");
       }
-
+   
 return;
     }
     function resetFormInputs() {
@@ -347,6 +352,7 @@ return;
             playerElem[i].textContent = `${inputs[i].name} ${inputs[i].tac}`;
             arr[i].textContent=inputs[i].score;
             playerElem[i].setAttribute("data-set", inputs[i].tac);
+              playerElem[i].classList.add(inputs[i].name);
         }
     }
 
