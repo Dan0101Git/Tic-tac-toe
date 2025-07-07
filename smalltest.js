@@ -1,9 +1,9 @@
 //////////////////////////
 const domController = (function () {  // dom module 1
-    const modal = document.querySelector("dialog");
-
+    const modalInput = document.querySelector("dialog");
+    const modalEnd=document.querySelector(".game-end")
     function showModal() {
-        modal.showModal();
+        modalInput.showModal();
     }
 
     function checkValidation(e) { // check validation on form submission
@@ -25,11 +25,13 @@ const domController = (function () {  // dom module 1
     }
 
     function domToBackend(players) {
-        disableModal();
+        disableModal(modalInput);
+        disableModal(modalEnd);
+        modalEnd.classList.remove("show")
         gameController.setPlayers(players); // interaction 1
     }
 
-    function disableModal() {
+    function disableModal(modal) {
         modal.close();
     }
 
@@ -47,9 +49,10 @@ const domController = (function () {  // dom module 1
 
 const eventListneres = (function () { //#dom module 2
     const grid = document.querySelector(".game-grid");
-
+        const finalButton=document.querySelector(".start-again");
     function modalDisplay() { // adds listener
         window.addEventListener("load", domController.showModal);
+        finalButton.addEventListener("click",domController.showModal);
     }
 
     function formValidation() { // add listener
@@ -79,7 +82,7 @@ const Player = function (name, tac, score) {
 };
 
 const masterState = (function () {
-    let state = {
+    let initialState = {
         board: ["", "", "", "", "", "", "", "", ""],
         players: {}, // this contains instances of Player
         gameState: "", // gameStart||ongoing,roundend or gameend
@@ -89,15 +92,14 @@ const masterState = (function () {
         roundScore: 0,
     };
 
-    const deepCopy = structuredClone(state);
-
+    let state = structuredClone(initialState);
     function getState() {
-        return { ...state };
+        return {...state}
     }
 
     function getStateCopy() {
-        console.log(deepCopy);
-        return { ...deepCopy };
+       
+        return structuredClone(initialState)
     }
 
     function updateState(newState) {
@@ -113,7 +115,7 @@ const masterState = (function () {
 
 const gameController = (function () {
     function setPlayers(playerNames) {
-        const currentState = masterState.getState();
+        const currentState = masterState.getStateCopy();
         const players = {
             player1: new Player(playerNames[0], "X", 0),
             player2: new Player(playerNames[1], "O", 0) // FIXED: second name should be [1], not [0]
@@ -158,7 +160,7 @@ const gameController = (function () {
                     newRoundState.roundScore = newState.roundScore++;
                     console.log(newRoundState);
                     helpers.updateCurrentstate(newRoundState);
-                }, 2000);
+                }, 1300);
             }
         } else return;
     }
@@ -240,7 +242,8 @@ const helpers = (function () {
 const render = (function () { // render the DOM (receives updates from backend)
     const arr = Array.from(document.querySelectorAll(".score"));
     const modal=document.querySelector(".game-end");
-    const finalButton=document.querySelector(".start-again");
+    const resultPara=document.querySelector(".result")
+
     const finalResult=document.querySelector(".final-result")
     const playerElem = Array.from(document.querySelectorAll(".player-name"));
    
@@ -264,7 +267,8 @@ const render = (function () { // render the DOM (receives updates from backend)
         else{
 updateRoundResult(newState.roundWinner,newState.players);
 updateFinalResult(newState.roundWinner,[[newState.players.player1.name,newState.players.player1.score],[newState.players.player2.name,newState.players.player2.score]])
-        }
+resetFormInputs();       
+}
     }
     // Render board state and update turn indicator
     const displayModule = function (board) {
@@ -288,7 +292,7 @@ updateFinalResult(newState.roundWinner,[[newState.players.player1.name,newState.
         let scoreBoard = [];
         scoreBoard.push(players.player1.score);
         scoreBoard.push(players.player2.score);
-        document.querySelector(".result").textContent = roundResult;
+        resultPara.textContent = roundResult;
         for (let i = 0; i < 2; i++)
             arr[i].textContent = scoreBoard[i];
     }
@@ -298,6 +302,7 @@ updateFinalResult(newState.roundWinner,[[newState.players.player1.name,newState.
       modal.showModal();
       console.log(finalResult);
       finalResult.textContent=gameResult;
+       resultPara.textContent = "";
       console.log(playerElem[3]); 
       for(let i=2;i<=3;i++)
       {
@@ -305,8 +310,14 @@ updateFinalResult(newState.roundWinner,[[newState.players.player1.name,newState.
         playerElem[i].textContent=players[i-2][0];
         arr[i].textContent=players[i-2][1];
       }
+
 return;
     }
+    function resetFormInputs() {
+  const inputValues = document.querySelectorAll("input");
+  inputValues.forEach(input => input.value = "");
+}
+
     // Show round indicator with animation
     function viewRound(roundCount) {
         if (roundCount >= 0) {
@@ -315,10 +326,11 @@ return;
             setTimeout(() => {
                 roundIndicator.textContent = `Round ${roundCount} ....`;
                 roundIndicator.classList.add('show');
-            }, 500);
+            }, 200);
             setTimeout(() => {
                 roundIndicator.classList.remove('show');
-            }, 1700); // fade out after 700ms
+                resultPara.textContent="";
+            }, 700); // fade out after 700ms
         }
     }
 
@@ -340,6 +352,7 @@ return;
     function setPlayers(inputs) {
         for (let i = 0; i < 2; i++) {
             playerElem[i].textContent = `${inputs[i].name} ${inputs[i].tac}`;
+            arr[i].textContent=inputs[i].score;
             playerElem[i].setAttribute("data-set", inputs[i].tac);
         }
     }

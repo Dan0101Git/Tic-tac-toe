@@ -1,8 +1,9 @@
 //////////////////////////
 const domController = (function () {  // dom module 1
-    const modal = document.querySelector("dialog");
+    const modalInput = document.querySelector("dialog");
+    const modalEnd=document.querySelector(".game-end")
     function showModal() {
-        modal.showModal();
+        modalInput.showModal();
     }
 
     function checkValidation(e) { // check validation on form submission
@@ -13,343 +14,343 @@ const domController = (function () {  // dom module 1
         requiredInputs.forEach((input) => {
             input.value ? input.className = "" : flag = 0;
         });
-        flag? designatePlayer(requiredInputs): requiredInputs.forEach((input) => {input.className = "empty";}); // add class empty else designate players
+
+        flag
+            ? designatePlayer(requiredInputs)
+            : requiredInputs.forEach((input) => { input.className = "empty"; }); // add class empty else designate players
     }
 
     function designatePlayer(inputs) { // internal function to designate players
-        let arr = [];
-        arr.push(
-            { name: inputs[0].value, tac: "X" },
-            { name: inputs[1].value, tac: "O" }
-        );
-
-        render.setPlayers(arr);
-        render.viewRound();//edge case
-        domToBackend(inputs); // setting players for the round
+        domToBackend([inputs[0].value, inputs[1].value]); // setting players for the round
     }
 
     function domToBackend(players) {
-        disableModal();
-        game.start(); 
-        roundState.start();
-        roundController.setRoundPlayers(players); // interaction 1
+        disableModal(modalInput);
+        disableModal(modalEnd);
+        modalEnd.classList.remove("show")
+        gameController.setPlayers(players); // interaction 1
     }
 
-    function disableModal() {
+    function disableModal(modal) {
         modal.close();
     }
-    
-    function setUserInput(e){
-    if(game.getState() && roundState.getState()){
-           let arr=e.target.getAttribute("data-set").split(" ");
-   document.querySelector(".result").textContent=""
-    gameControl.myTurn(arr[0],arr[1]); //interaction 2
-    } 
-}
+
+    function setUserInput(e) {
+        let index = e.target.getAttribute("data-set");
+        gameController.playTurn(index); // interaction 2
+    }
+
     return {
         showModal,
-        checkValidation,setUserInput
+        checkValidation,
+        setUserInput
     };
 })();
 
-//////////////////////////////////////
+const eventListneres = (function () { //#dom module 2
+    const grid = document.querySelector(".game-grid");
+        const finalButton=document.querySelector(".start-again");
+    function modalDisplay() { // adds listener
+        window.addEventListener("load", domController.showModal);
+        finalButton.addEventListener("click",domController.showModal);
+    }
 
+    function formValidation() { // add listener
+        document.querySelector(".modal-submit").addEventListener("click", domController.checkValidation);
+    }
 
+    grid.addEventListener("click", domController.setUserInput);
 
-/////////////////////////////
-const eventListneres=(function(){ //#dom module 2
-const grid=document.querySelector(".game-grid");
-function modalDisplay(){ //adds listener
-window.addEventListener("load",domController.showModal)   
-}
-function formValidation(){ //add listner
-    document.querySelector(".modal-submit").addEventListener("click",domController.checkValidation);
-   
-}
+    function getGrid() {
+        return grid;
+    }
 
-grid.addEventListener("click",domController.setUserInput);
-function getGrid(){
-    return grid;
-}
-return{modalDisplay,formValidation,getGrid};
+    return {
+        modalDisplay,
+        formValidation,
+        getGrid
+    };
 })();
-eventListneres.modalDisplay();//plublic scope, add evet listners to display modal and validate form
+eventListneres.modalDisplay(); // public scope, add event listeners to display modal and validate form
 eventListneres.formValidation();
-/////////////////////////////
 
-/////////////////////////////
+const Player = function (name, tac, score) {
+    this.name = name;
+    this.tac = tac;
+    this.score = score;
+};
+const masterState = (function () {
+    let initialState = {
+        board: ["", "", "", "", "", "", "", "", ""],
+        players: {}, // this contains instances of Player
+        gameState: "", // gameStart||ongoing,roundend or gameend
+        roundWinner: "",
+        isDraw: "false",
+        turn: null,
+        roundScore: 0,
+    };
 
-const render = function () { // render the DOM (receives updates from backend)
-    let previousTurn = document.querySelector(".player2");
-    let player1Dom=document.querySelector(".player1");
-    let round;let arr = Array.from(document.querySelectorAll(".score"));
-    // Render board state and update turn indicator
-    const displayModule = function (turn,board) {
-        let grid = Array.from(eventListneres.getGrid().children); // grid cells//getting data from dom controller
-        let c = 0;
-        for (let i = 0; i < 3; i++) {
-            for (let j = 0; j < 3; j++) {
-                grid[c].textContent = board[i][j].getValue();
-                c++;
+    let state = structuredClone(initialState);
+    function getState() {
+        return {...state}
+    }
+    function getStateCopy() {    
+        return structuredClone(initialState)
+    }
+    function updateState(newState) {
+        state = newState;
+    }
+    return {
+        getState,
+        updateState,
+        getStateCopy
+    };
+})();
+
+const gameController = (function () {
+    function setPlayers(playerNames) {
+        const currentState = masterState.getStateCopy();
+        const players = {
+            player1: new Player(playerNames[0], "X", 0),
+            player2: new Player(playerNames[1], "O", 0) // FIXED: second name should be [1], not [0]
+        };
+
+        const newState = {
+            ...currentState,
+            players: players,
+            gameState: "gameStart",
+            turn: players.player1
+        };
+
+        helpers.updateCurrentstate(newState);
+    }
+
+    function playTurn(index) {
+        const currentState = masterState.getState();
+        const newState = { ...currentState };
+
+        if (helpers.checkTurn(newState, index) && newState.gameState !== "roundEnd" && newState.gameState!=="gameEnd") {
+            newState.board[index] = currentState.turn.tac;
+
+            if (!checkRoundResult(newState)) {
+                newState.turn = helpers.switchTurn(newState.turn, newState.players);
+                newState.gameState = "ongoing";
+                helpers.updateCurrentstate(newState);
+            } else {
+                helpers.updateCurrentstate(newState);
+                console.log(newState);
+              if(checkGameResult(newState,[newState.players.player1.score,newState.players.player2.score]))
+             {console.log(newState);
+              setTimeout(()=>{helpers.updateCurrentstate(newState);},2500)
+              return;
+             } 
+                setTimeout(() => {
+                    const newRoundState = masterState.getStateCopy();
+                    newRoundState.board.fill('');
+                    console.log(newRoundState.board);
+                    newRoundState.gameState = "roundStart";
+                    newRoundState.turn = newState.players.player1;
+                    newRoundState.players = newState.players;
+                    newRoundState.roundScore = newState.roundScore++;
+                    console.log(newRoundState);
+                    helpers.updateCurrentstate(newRoundState);
+                }, 1300);
             }
+        } else return;
+    }
+    function checkRoundResult(roundState) {
+        if (result = helpers.checkWinner(roundState.board, roundState.turn.tac)) {
+            if (typeof result === "string") {
+              console.log("hey");
+                roundState.isDraw = true;
+                roundState.roundWinner = "It's a draw";
+            } else {
+                roundState.winningPattern = result;
+                roundState.turn.score++;
+                roundState.roundWinner = `${roundState.turn.name} is the Winner!!!`;
+            }
+            roundState.roundScore++;
+            roundState.gameState = "roundEnd";
+            return true;
+        } else {
+            return false;
         }
-        setTurn(turn);
+    }
+function checkGameResult(roundState,scores){
+  if(roundState.roundScore>=3){
+    if(scores[0]===scores[1])
+      roundState.roundWinner="Its's a DRAW MAN";
+    else
+   roundState.roundWinner=scores[0]>scores[1]?`${roundState.players.player1.name} WON!!!`:`${roundState.players.player2.name} won the ENTIRE GAME!!!`
+  roundState.gameState="gameEnd";
+  console.log(roundState);
+  }
+else return false;
+
+return true;
+}
+    return {
+        setPlayers,
+        playTurn
+    };
+})();
+
+const helpers = (function () {
+    function checkTurn(state, index) {
+        return !state.board[index];
+    }
+
+    function switchTurn(currentTurn, players) {
+        return currentTurn === players.player1 ? players.player2 : players.player1;
+    }
+
+    function checkWinner(board, turn) {
+      let flag=0;
+        const patterns = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
+        const winningPattern = patterns.find(pattern =>
+            pattern.every(index => board[index] === turn)
+        );
+        board.forEach((value)=>{
+        if(value)
+          flag++;
+        });
+        if (!winningPattern && flag===9)
+            return "draw";
+        return winningPattern || null; // null if no win
+    }
+
+    function updateCurrentstate(state) {
+        masterState.updateState(state);
+        render.setState(masterState.getState());
+    }
+
+    return {
+        checkTurn,
+        checkWinner,
+        updateCurrentstate,
+        switchTurn
+    };
+})();
+
+const render = (function () { // render the DOM (receives updates from backend)
+    const arr = Array.from(document.querySelectorAll(".score"));
+    const modal=document.querySelector(".game-end");
+    const resultPara=document.querySelector(".result")
+
+    const finalResult=document.querySelector(".final-result")
+    const playerElem = Array.from(document.querySelectorAll(".player-name"));
+   
+    function setState(newState) {
+        console.log(newState);
+        displayModule(newState.board);
+
+        if (newState.gameState === "gameStart") {
+            setPlayers([newState.players.player1, newState.players.player2]);
+            setTurn(newState.gameState, newState.turn.tac);
+            viewRound(newState.roundScore);
+        } else if (newState.gameState === "ongoing") {
+            setTurn(newState.gameState, newState.turn.tac);
+        } else if (newState.gameState === "roundEnd") {
+            makeRoundAnimation(newState.winningPattern);
+            updateRoundResult(newState.roundWinner, newState.players);
+        } else if (newState.gameState === "roundStart") {
+            console.log(newState.roundScore);
+            viewRound(newState.roundScore);
+        }
+        else{
+updateRoundResult(newState.roundWinner,newState.players);
+updateFinalResult(newState.roundWinner,[[newState.players.player1.name,newState.players.player1.score],[newState.players.player2.name,newState.players.player2.score]])
+resetFormInputs();       
+}
+    }
+    // Render board state and update turn indicator
+    const displayModule = function (board) {
+        let grid = Array.from(eventListneres.getGrid().children); // grid cells
+        for (let i = 0; i < 9; i++) {
+            console.log(board[i]);
+            grid[i].textContent = board[i];
+        }
     };
 
     // Highlight current player's turn
-    function setTurn(turn) {//sets green border around  player's turn
-        document.querySelector(`div[data-set=${turn.getName()}]`).classList.remove("my-turn");//might bug if no class found wth my-turn in edge case
-        if(!roundState.getState()){//when the round is "paused, set turn to player 1 again for next round"
-            previousTurn=player1Dom;
-             previousTurn.classList.add("my-turn");
-        }
-        else{      previousTurn.classList.add("my-turn");
-        previousTurn = document.querySelector(`div[data-set=${turn.getName()}]`);}
-  
+    function setTurn(state, turn) {
+        console.log(state);
+        if (state !== "gameStart")
+            document.querySelector(".my-turn").classList.remove("my-turn");
+        document.querySelector(`div[data-set=${turn}]`).classList.add("my-turn");
     }
 
     // Update scoreboard and round view after result
-    function updateRoundResult(roundResult) {//roundResult is an object={result(string),pattern(winner pattern array),score(scoreboard)}
-        let scoreBoard = roundResult.score;
-        document.querySelector(".result").textContent =roundResult.result;
+    function updateRoundResult(roundResult, players) {
+        let scoreBoard = [];
+        scoreBoard.push(players.player1.score);
+        scoreBoard.push(players.player2.score);
+        resultPara.textContent = roundResult;
         for (let i = 0; i < 2; i++)
             arr[i].textContent = scoreBoard[i];
-        makeRoundAnimation(roundResult.pattern);
-        viewRound(1);
-       
     }
+    function updateFinalResult(gameResult,players)
+    {
+      modal.classList.add("show");
+      modal.showModal();
+      console.log(finalResult);
+      finalResult.textContent=gameResult;
+       resultPara.textContent = "";
+      console.log(playerElem[3]); 
+      for(let i=2;i<=3;i++)
+      {
+        console.log(playerElem[i]);
+        playerElem[i].textContent=players[i-2][0];
+        arr[i].textContent=players[i-2][1];
+      }
+
+return;
+    }
+    function resetFormInputs() {
+  const inputValues = document.querySelectorAll("input");
+  inputValues.forEach(input => input.value = "");
+}
 
     // Show round indicator with animation
-    function viewRound(result) {//only connected to dom
-        if (!round) round = 1;
-
-        if (round < 4) {
+    function viewRound(roundCount) {
+        if (roundCount >= 0) {
             let roundIndicator = document.querySelector(".round");
-          if(result){
-            setTimeout(()=>{roundIndicator.textContent = `Round ${round}`;
-            roundIndicator.classList.add('show');},2000)
-          }else{roundIndicator.textContent = `Round ${round}`;
-            roundIndicator.classList.add('show');}
+            console.log(roundIndicator);
             setTimeout(() => {
-                roundIndicator.classList.remove('show');  ++round;
-            }, 2700); // fade out after 700ms
+                roundIndicator.textContent = `Round ${roundCount} ....`;
+                roundIndicator.classList.add('show');
+            }, 200);
+            setTimeout(() => {
+                roundIndicator.classList.remove('show');
+                resultPara.textContent="";
+            }, 700); // fade out after 700ms
         }
-       
     }
 
     // Draw winning line animation
     function makeRoundAnimation(pattern) {
         if (pattern) {
+          console.log(pattern)
             const lineSVG = `
 <svg xmlns="http://www.w3.org/2000/svg" width="120%" height="120%" viewBox="0 0 100 100" preserveAspectRatio="none">
   <line x1="0" y1="0" x2="100" y2="100" stroke="#575757" stroke-width="3" stroke-linecap="round" />
-</svg>`
-console.log(pattern);
-           pattern.forEach(cell => { document.querySelector(`[data-set="${cell}"]`).insertAdjacentHTML('beforeend', lineSVG);});
+</svg>`;
+            pattern.forEach(cell => {
+                document.querySelector(`[data-set="${cell}"]`).insertAdjacentHTML('beforeend', lineSVG);
+            });
         }
     }
 
     // Set player names and tokens in DOM
-    function setPlayers(inputs) {//dom  to dom
-        document.querySelector(".player1").classList.add("my-turn");//assuming player 1 takes first
+    function setPlayers(inputs) {
         for (let i = 0; i < 2; i++) {
-            const playerElem = Array.from(document.querySelectorAll(".player-name"))[i];
-            playerElem.textContent = `${inputs[i].name} ${inputs[i].tac}`;
-            playerElem.setAttribute("data-set", inputs[i].name);
-        }}
-    return { displayModule,  setPlayers, updateRoundResult, viewRound, makeRoundAnimation };}();
-
-/////////backend logic(5 modules  Game,Player,GameController,RoundController)
-//////////////////////////////////////////////////////////////////////////
-const Game=function(){
-let state=false;
-const start=function(){
-    state=true;
-}
-const stop=function(){
-    state=false;
-}
-const getState=function(){
-    return state;
-}
-    return {getState,start,stop}};
-const game=Game();
-const roundState=Game();
-
-   const createBoard=(function()//check baord state, render baord state
-{
-const board=[];//2-d array having cells, 3*3 array, containing 9 cells
-const cell=function(){
-    let value="";
-    function setValue(playerValue){
-        value=playerValue;
-    }
-    function getValue(){
-        return value;
-    }
-    return {getValue,setValue}
-}
-//make the baord, none intractive
-for(let i=0;i<3;i++){
-    board[i]=[];
-    for(let j=0;j<3;j++){
-       board[i][j]=cell();  // board array is a collection of Cell Object instances
-    }
-}
-function getPosition(row,column){
-     return board[row][column];
-}
-function setPosition(row,column,tac)//for each turn
-{
-    board[row][column].setValue(tac);
-}
-const boardReset=()=>{for(let i=0;i<3;i++){
-    for(let j=0;j<3;j++){board[i][j].setValue("");   }}}
-function getBoard(){
-    return board;
-}
-return{getPosition,setPosition,getBoard,boardReset}})();
-
-
-//create Player factory function
-const Player=function(name,tac,score){
-    this.name=name;
-    this.tac=tac;
-    this.score=score;
-}
-///////////////////////////////////////////////////////////
-
-        //game Brains!
-const gameControl=(function(){
-    let roundPlayers=[];
-    let InitialTurn;
-            let turn ;//PLAYER 1 AKES FIRST TURN
-    let turnCount=0;
-    function setPlayers(players){
-    roundPlayers=players;
-        turn=players[0];
-        InitialTurn=turn;
-    }
-    function myTurn(row,column){//controls the turn(master controller of each turn)
-         
-          
-            if(checkCell(row,column)){
-        
-            turn.setPosition(row,column);//sgive that position ot player
-            turnCount++;
-          if( checkRoundResult()) 
-           {  //resetting when you get the result
-            roundPlayers.forEach((player)=>{player.resetPlayerStats()});//reset player positions
-            updateDisplay(row,column,turn,turn.getTacOption());
-            roundState.stop();
-             render.updateRoundResult(roundController.getRoundResult());
-            setTimeout(()=>{createBoard.boardReset();
-                roundState.start();
-                 render.displayModule(roundPlayers[1],createBoard.getBoard());//stopping round for 3 seconds
- },3000);
-                    turnCount=0;
-           }
-             else{
-                updateDisplay(row,column,turn,turn.getTacOption());
-               delegateTurn();  }      }
-                return;
-    }
-    //helper f'ns to myturn controller
-            function updateDisplay(row,column,playerTurn,tac){
-                    createBoard.setPosition(row,column,tac);//first make th ebackend board
-                    render.displayModule(playerTurn,createBoard.getBoard());// send current board and turn to render grid display adn set turn
-         return;
-            }
-          function checkCell(row,column){
-              return createBoard.getPosition(row,column).getValue()==="";}
-    
-          function checkRoundResult(){
-       if(result=gameAlgo()){       
-                  roundController.setRoundResult(result);//sending rond controller ot set result
-           return true;}
-            return false
-         }
-        function delegateTurn(){
-            turn=(turn===roundPlayers[0])?roundPlayers[1]:roundPlayers[0];return;//switches turn
-         }
-
-    //game algorithm
-    function gameAlgo(){
-         let winner;
-         const players=turn;
-        const playerPosition=players.getPosition();
-        if(xY() || diagnal())
-            return winner;
-         else if(turnCount===9)
-            return "It's a draw :((";
-         else 
-             false;
-    
-         function xY(){
-                let regex=/(?:.*([0-9]).*?\1.*?\1)/;let arr=[];
-             if(regex.test(playerPosition.rows.toString()) || regex.test(playerPosition.columns.toString()) ){
-                winner=players;
-                 arr.push(`${playerPosition.rows[i]} ${playerPosition.columns[i]}`);
-                 winner.setWinningArray(arr);
-             return true; }
-                        }
-        function diagnal(){
-                let counter1=0;let arr1=[];let arr2=[];let counter2=0;
-                for(i=0;i<playerPosition.rows.length;i++){
-                    if(playerPosition.rows[i]===playerPosition.columns[i])
-                        {   counter1++;
-                            arr1.push(`${playerPosition.rows[i]} ${playerPosition.columns[i]}`);
-                             } //right diagnal
-                    if(parseInt(playerPosition.rows[i])+parseInt(playerPosition.columns[i])===2)
-                        {   counter2++;
-                            arr2.push(`${playerPosition.rows[i]} ${playerPosition.columns[i]}`); }//left diagnol
-                        }
-        if(counter1===3 || counter2===3){
-             winner=players;
-            winner.setWinningArray(counter1===3?arr1:arr2);//push th ewinning array format to winner player which ever diagnol pattern  won
-            return true;}}}
-    return{myTurn,setPlayers,checkRoundResult}  })();
-
-///////////////////////////////////////
-
-const roundController=(function(){//controls game flow and manages game ctroller iife, form submission -> roundcontroller->game cntroller
-    let roundCount=0;//tracking round count (1,2,3)
-    let player1;//tracking players playing the game
-    let player2;let pattern;
-    let roundResult;//evaluate round  and game result//contains player who won, or stirng of draw if draw//IT IS WALWAYS GONNA BE A STRING
-    function setRoundPlayers(players){//tick //entry point  POINT 1
-        player1 = Player(players[0].value, "X"); // inputting players and making instances of them
-        player2 = Player(players[1].value, "O");
-        gameControl.setPlayers([player1,player2]);  
-    }
-    function setRoundResult(result){ //tick  bring result from game controller, evaluate it, store it in a vairbale and  update player score
-        roundCount++;
-        if(typeof result!=="string"){
-            (result===player1)?player1.setScore():player2.setScore();
-             pattern=result.getWinPattern();
-            result=`${result.getName()} WINS!!!!`;
-        }
-        roundResult={result:result,pattern:pattern,score:[player1.getScore(),player2.getScore()]};
-        prepareNextRound(); 
-    } 
-    function prepareNextRound(){    //red flag
-        if(roundCount>=3){  
-             
-              game.stop();  //mark //start next game
-            roundResult={result:getGameResult(),pattern:pattern,score:[player1.getScore(),player2.getScore()]};
-        }  
-         pattern=[];//next time, closure over pattern gets returned if next round is a draw 
-    }
-    function  getGameResult(){//evalate result whne round ends
-        if(player1.getScore()===player2.getScore())
-            return "Game is a DRAW!!";
-        else{
-            return player1.getScore()>player2.getScore()?`${player1.getName()} WINS THE ENTIRE GAME!!!!`:`${player2.getName()} WINS THE ENTIRE GAME!!!!`;
+            playerElem[i].textContent = `${inputs[i].name} ${inputs[i].tac}`;
+            arr[i].textContent=inputs[i].score;
+            playerElem[i].setAttribute("data-set", inputs[i].tac);
         }
     }
-    function getRoundResult(){//a single point to get result after each round
-        return roundResult;//roundSesult is an object={result(string),pattern(winner pattern array),score(scoreboard)}
-    }
-    return{setRoundPlayers,setRoundResult,getRoundResult}})();
 
-
+    return {
+        setState
+    };
+})();
