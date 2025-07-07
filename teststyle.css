@@ -166,6 +166,22 @@ dialog{
 dialog::backdrop{
 background: rgba(0,0,0,0.6 );
 }
+dialog.game-end{
+    visibility:hidden;
+}
+.game-end.show .cards{
+    display: flex;
+    gap:4rem;
+}
+.game-end.show{
+    visibility: visible;
+          display: flex;
+    flex-direction: column;
+    gap:10%;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+}
 form{
     height: 100%;
 }

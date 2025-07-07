@@ -133,7 +133,7 @@ const gameController = (function () {
         const currentState = masterState.getState();
         const newState = { ...currentState };
 
-        if (helpers.checkTurn(newState, index) && newState.gameState !== "roundEnd") {
+        if (helpers.checkTurn(newState, index) && newState.gameState !== "roundEnd" && newState.gameState!=="gameEnd") {
             newState.board[index] = currentState.turn.tac;
 
             if (!checkRoundResult(newState)) {
@@ -143,7 +143,11 @@ const gameController = (function () {
             } else {
                 helpers.updateCurrentstate(newState);
                 console.log(newState);
-
+              if(checkGameResult(newState,[newState.players.player1.score,newState.players.player2.score]))
+             {console.log(newState);
+              setTimeout(()=>{helpers.updateCurrentstate(newState);},2500)
+              return;
+             } 
                 setTimeout(() => {
                     const newRoundState = masterState.getStateCopy();
                     newRoundState.board.fill('');
@@ -154,7 +158,7 @@ const gameController = (function () {
                     newRoundState.roundScore = newState.roundScore++;
                     console.log(newRoundState);
                     helpers.updateCurrentstate(newRoundState);
-                }, 3000);
+                }, 2000);
             }
         } else return;
     }
@@ -162,6 +166,7 @@ const gameController = (function () {
     function checkRoundResult(roundState) {
         if (result = helpers.checkWinner(roundState.board, roundState.turn.tac)) {
             if (typeof result === "string") {
+              console.log("hey");
                 roundState.isDraw = true;
                 roundState.roundWinner = "It's a draw";
             } else {
@@ -176,7 +181,19 @@ const gameController = (function () {
             return false;
         }
     }
+function checkGameResult(roundState,scores){
+  if(roundState.roundScore>=3){
+    if(scores[0]===scores[1])
+      roundState.roundWinner="Its's a DRAW MAN";
+    else
+   roundState.roundWinner=scores[0]>scores[1]?`${roundState.players.player1.name} WON!!!`:`${roundState.players.player2.name} won the ENTIRE GAME!!!`
+  roundState.gameState="gameEnd";
+  console.log(roundState);
+  }
+else return false;
 
+return true;
+}
     return {
         setPlayers,
         playTurn
@@ -193,11 +210,16 @@ const helpers = (function () {
     }
 
     function checkWinner(board, turn) {
+      let flag=0;
         const patterns = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
         const winningPattern = patterns.find(pattern =>
             pattern.every(index => board[index] === turn)
         );
-        if (!winningPattern && board.every(index => board[index]))
+        board.forEach((value)=>{
+        if(value)
+          flag++;
+        });
+        if (!winningPattern && flag===9)
             return "draw";
         return winningPattern || null; // null if no win
     }
@@ -216,10 +238,12 @@ const helpers = (function () {
 })();
 
 const render = (function () { // render the DOM (receives updates from backend)
-    let player1Dom = document.querySelector(".player1");
-    let round;
-    let arr = Array.from(document.querySelectorAll(".score"));
-
+    const arr = Array.from(document.querySelectorAll(".score"));
+    const modal=document.querySelector(".game-end");
+    const finalButton=document.querySelector(".start-again");
+    const finalResult=document.querySelector(".final-result")
+    const playerElem = Array.from(document.querySelectorAll(".player-name"));
+   
     function setState(newState) {
         console.log(newState);
         displayModule(newState.board);
@@ -237,8 +261,11 @@ const render = (function () { // render the DOM (receives updates from backend)
             console.log(newState.roundScore);
             viewRound(newState.roundScore);
         }
+        else{
+updateRoundResult(newState.roundWinner,newState.players);
+updateFinalResult(newState.roundWinner,[[newState.players.player1.name,newState.players.player1.score],[newState.players.player2.name,newState.players.player2.score]])
+        }
     }
-
     // Render board state and update turn indicator
     const displayModule = function (board) {
         let grid = Array.from(eventListneres.getGrid().children); // grid cells
@@ -265,7 +292,21 @@ const render = (function () { // render the DOM (receives updates from backend)
         for (let i = 0; i < 2; i++)
             arr[i].textContent = scoreBoard[i];
     }
-
+    function updateFinalResult(gameResult,players)
+    {
+      modal.classList.add("show");
+      modal.showModal();
+      console.log(finalResult);
+      finalResult.textContent=gameResult;
+      console.log(playerElem[3]); 
+      for(let i=2;i<=3;i++)
+      {
+        console.log(playerElem[i]);
+        playerElem[i].textContent=players[i-2][0];
+        arr[i].textContent=players[i-2][1];
+      }
+return;
+    }
     // Show round indicator with animation
     function viewRound(roundCount) {
         if (roundCount >= 0) {
@@ -274,16 +315,17 @@ const render = (function () { // render the DOM (receives updates from backend)
             setTimeout(() => {
                 roundIndicator.textContent = `Round ${roundCount} ....`;
                 roundIndicator.classList.add('show');
-            }, 1200);
+            }, 500);
             setTimeout(() => {
                 roundIndicator.classList.remove('show');
-            }, 2700); // fade out after 700ms
+            }, 1700); // fade out after 700ms
         }
     }
 
     // Draw winning line animation
     function makeRoundAnimation(pattern) {
         if (pattern) {
+          console.log(pattern)
             const lineSVG = `
 <svg xmlns="http://www.w3.org/2000/svg" width="120%" height="120%" viewBox="0 0 100 100" preserveAspectRatio="none">
   <line x1="0" y1="0" x2="100" y2="100" stroke="#575757" stroke-width="3" stroke-linecap="round" />
@@ -297,9 +339,8 @@ const render = (function () { // render the DOM (receives updates from backend)
     // Set player names and tokens in DOM
     function setPlayers(inputs) {
         for (let i = 0; i < 2; i++) {
-            const playerElem = Array.from(document.querySelectorAll(".player-name"))[i];
-            playerElem.textContent = `${inputs[i].name} ${inputs[i].tac}`;
-            playerElem.setAttribute("data-set", inputs[i].tac);
+            playerElem[i].textContent = `${inputs[i].name} ${inputs[i].tac}`;
+            playerElem[i].setAttribute("data-set", inputs[i].tac);
         }
     }
 
